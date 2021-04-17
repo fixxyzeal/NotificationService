@@ -1,0 +1,36 @@
+name: .NET Core CI/CD
+
+# Controls when the action will run. Triggers the workflow on push or pull request 
+# events only for the release branch
+on:
+  push:
+    branches:
+      - Release
+    
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: |
+          pushd ./
+          docker info
+          docker build -t notificationapi -f Dockerfile .
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+          
+    - name: Build and deploy the Docker image
+      env: 
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        APP_NAME: ${{ 'notificationserviceapi' }}
+    
+      run: |
+        docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
+        docker tag notificationserviceapi registry.heroku.com/$APP_NAME/web
+        docker push registry.heroku.com/$APP_NAME/web                
+        curl https://cli-assets.heroku.com/install.sh | sh
+        heroku container:release web -a $APP_NAME
