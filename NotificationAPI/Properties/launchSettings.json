@@ -1,0 +1,41 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:50873",
+      "sslPort": 44307
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "NotificationAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LineChannelAccessToken": "yUV7WEF2IRuJ9sYT/UWpzlFfjkv4tVNChXGqseOhPzPe1aHQQ2asCoNhqw7X0cTHPLPrMu+tZMv1g/h/IrOz4CfMZWNgYbtdmVr3TLkcpE2wIltuR4MGeYHgJjLXchZ5jdSXAm4DSXKTFlrZTatL5QdB04t89/1O/w1cDnyilFU=",
+        "REDIS_HOST": "redis-11876.c56.east-us.azure.cloud.redislabs.com:11876",
+        "REDIS_PASS": "2rIopL8zDWx8EdM5AUMgHLnmSWWI5KEw"
+      },
+      "dotnetRunMessages": "true",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  }
+}
