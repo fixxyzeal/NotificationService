@@ -15,6 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ServicesLibrary.HostedServices;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace NotificationAPI
 {
@@ -40,10 +44,82 @@ namespace NotificationAPI
             //Add Hosted Services
             services.AddHostedService<NotificationHostedService>();
 
+            //Add Cors
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                builder => builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                );
+            });
+
+            //Add JWT
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("SECRET")));
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+                ValidateIssuer = true,
+                ValidIssuer = "FS",
+                ValidateAudience = true,
+                ValidAudience = "FS Studio",
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                RequireExpirationTime = true,
+            };
+
+            services.AddAuthentication("IdentityKey")
+                    .AddJwtBearer("IdentityKey", x =>
+                    {
+                        x.RequireHttpsMetadata = false;
+                        x.TokenValidationParameters = tokenValidationParameters;
+                    });
+
             services.AddControllers();
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "NotificationAPI", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "NotificationAPI",
+                    Version = "v1",
+                    Description = "NotificationAPI " + services.GetType().Assembly.GetName().Version.ToString(),
+
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Chanchai Jeimvijack",
+                        Email = "kewell5@live.com",
+                    },
+                });
+
+                // Add Jwt
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme."
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                            {
+                                  new OpenApiSecurityScheme
+                                    {
+                                        Reference = new OpenApiReference
+                                        {
+                                            Type = ReferenceType.SecurityScheme,
+                                            Id = "Bearer"
+                                        }
+                                    },
+                                    new string[] {}
+                            }
+                    });
             });
         }
 
@@ -59,11 +135,10 @@ namespace NotificationAPI
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "NotificationAPI v1"));
 
             app.UseHttpsRedirection();
-
+            app.UseCors("CorsPolicy");
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
